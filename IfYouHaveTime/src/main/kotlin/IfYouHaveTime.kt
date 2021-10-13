@@ -44,17 +44,20 @@ object IfYouHaveTime {
             ticker to priceMap
         }.toMap()
 
-        //val veryStart = System.currentTimeMillis()
-        //TimestreamWriter("StockPrices", "FANG", REGION).writeToTimestream(genericRecords)
+        val veryStart = System.currentTimeMillis()
+        // TimestreamWriter("StockPrices", "FANG", REGION).writeToTimestream(genericRecords)
         val timeStreamComplete = System.currentTimeMillis()
         // CloudWatchWriter("FANG", "StockPrices", REGION).publishToCloudWatch(genericRecords)
         val cloudWatchWriterComplete = System.currentTimeMillis()
-        DynamoDBWriter("StockPrices", REGION).writeToDynamoDb(genericRecords)
+        DynamoDBWriter("ifyouhavetime", REGION).writeToDynamoDb(genericRecords)
         val dynamoDbWriterComplete = System.currentTimeMillis()
+        //RDSWriter("ifyouhavetime", "StockPrices", REGION).writeToRds(genericRecords)
+        val rdsWriteComplete = System.currentTimeMillis()
 
-        //println("Timestream write time: ${timeStreamComplete - veryStart}")
+        println("Timestream write time: ${timeStreamComplete - veryStart}")
         println("Cloudwatch write time: ${cloudWatchWriterComplete - timeStreamComplete}")
         println("DynamoDB write time: ${dynamoDbWriterComplete - cloudWatchWriterComplete}")
+        println("RDS write time: ${rdsWriteComplete - dynamoDbWriterComplete}")
     }
 
     private fun generateTimestamps(

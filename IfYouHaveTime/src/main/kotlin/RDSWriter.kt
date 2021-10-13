@@ -7,9 +7,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class RDSWriter(
-    region: Region,
     private val databaseName: String,
-    private val tableName: String
+    private val tableName: String,
+    region: Region
 ) {
     private val rdsClient: RdsDataClient = RdsDataClient.builder().region(region).build()
 
@@ -51,14 +51,17 @@ class RDSWriter(
             parameterSets.indices.forEach {
                 val executeStatement = BatchExecuteStatementRequest.builder()
                     .database(databaseName)
-                    .sql("INSERT INTO $tableName values (:ticker, :timestamp, :price")
+                    .sql("INSERT INTO $tableName values (:ticker, :price, :timestamp::timestamp without time zone)")
                     .parameterSets(parameterSets[it])
+                    .resourceArn("arn:aws:rds:us-west-2:765643058521:cluster:ifyouhavetime-cluster")
+                    .secretArn("arn:aws:secretsmanager:us-west-2:765643058521:secret:rds-db-credentials/cluster-3NK3OLZV6BMNOINTOYKEWRM7II/postgres-BZhLzn")
                     .build()
 
                 rdsClient.batchExecuteStatement(executeStatement)
             }
         } catch (e: Exception) {
-
+            println("Problem writing to RDS")
+            e.printStackTrace()
         }
     }
 }
