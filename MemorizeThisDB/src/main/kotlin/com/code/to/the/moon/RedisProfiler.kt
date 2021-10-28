@@ -36,16 +36,14 @@ class RedisProfiler(
         var firstReadTotal = 0L
         var secondReadTotal = 0L
         ids.map { it.toString() }.forEach { id ->
-            val firstResult: Map<String, String>
             val firstRead = measureNanoTime {
-                firstResult = jedis.hgetAll(id)
+                jedis.hgetAll(id)
             }
 
             firstReadTotal += firstRead
 
-            val secondResult: Map<String, String>
             val secondRead = measureNanoTime {
-                secondResult = jedis.hgetAll(id)
+                jedis.hgetAll(id)
             }
 
             secondReadTotal += secondRead

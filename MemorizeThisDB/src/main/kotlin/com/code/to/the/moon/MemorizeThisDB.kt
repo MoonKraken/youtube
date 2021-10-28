@@ -53,6 +53,7 @@ class MemorizeThisDB : RequestHandler<Object, String> {
         }
 
         // Test DDB in isolation
+        // This one requires internet access
         profileDDBBasedSystem(
             "DDB-only",
             Region.US_WEST_2,
@@ -62,6 +63,7 @@ class MemorizeThisDB : RequestHandler<Object, String> {
             dataUpdates
         )
 
+        // The three tests below require that the lambda be in the same VPC as the resource being profiled
 
         // Test DDB with DAX
         profileDDBBasedSystem(
@@ -73,7 +75,6 @@ class MemorizeThisDB : RequestHandler<Object, String> {
             dataUpdates,
             "daxs://memorize-this-db.umlvfx.dax-clusters.us-west-2.amazonaws.com"
         )
-
 
         // Test ElastiCache
         profileRedisBasedSystem(
@@ -96,7 +97,7 @@ class MemorizeThisDB : RequestHandler<Object, String> {
             idsToRead,
             dataUpdates
         )
-         */
+
         return "Done"
     }
 
