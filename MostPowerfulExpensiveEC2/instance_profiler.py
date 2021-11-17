@@ -44,7 +44,6 @@ for instance_type in instances_to_profile:
         }
     )[0].id)
 
-
 ec2_client = boto3.client('ec2')
 
 # loop until all of our newly created instances
@@ -66,7 +65,7 @@ while True:
         print(instance_state_dict)
         time.sleep(5.0)
 
-time.sleep(10.0) # wait a bit longer to make sure ssm knows the instance is in the correct state
+time.sleep(30.0) # wait a bit longer to make sure ssm knows the instance is in the correct state
 ssm_client = boto3.client('ssm')
 print(instance_ids)
 # have them all grab the script and run it
@@ -83,4 +82,30 @@ response = ssm_client.send_command(
 )
 
 command_id = response['Command']['CommandId']
-print(command_id)
+print("SSM command executed. Command ID: "+command_id)
+
+# poll the command until it is done, then terminate all of the instances
+original_instances = set(instance_ids)
+instances_terminated = set()
+
+time.sleep(20.0) # wait a bit before calling get_command_invocation
+while instances_terminated != original_instances:
+    print("Original Instances: " + str(original_instances))
+    print("Instances Terminated: " + str(instances_terminated))
+    for instance_id in original_instances - instances_terminated:
+        command_state = ssm_client.get_command_invocation(
+            CommandId=command_id,
+            InstanceId=instance_id,
+            PluginName='aws:RunShellScript'
+        )
+
+        curr_status = command_state['Status']
+        if curr_status == 'Success' or curr_status == 'Cancelled' or curr_status == 'TimedOut':
+            # if the command is finished on an instance, terminate
+            print(instance_id + " is in status " + curr_status + ", terminating...")
+            ec2_client.terminate_instances(InstanceIds = [instance_id])
+            instances_terminated.add(instance_id)
+        else:
+            print(instance_id + " is in state " + curr_status)
+    
+    time.sleep(5.0)
