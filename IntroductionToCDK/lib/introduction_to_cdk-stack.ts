@@ -23,7 +23,7 @@ export class IntroductionToCdkStack extends Stack {
 
     const fn = new lambda.Function(this, 'IntroductionToCdkFunction', {
       runtime: lambda.Runtime.PROVIDED_AL2,
-      handler: 'hello.handler',
+      handler: 'provided',
       code: lambda.Code.fromAsset(
         '/Users/kenk/Documents/Code/Repositories/youtube/RustOnAWS/lambda.zip'
       ),
