@@ -10,12 +10,8 @@ use api::task::{
     fail_task,
 };
 use repository::ddb::DDBRepository;
-use actix_web::{HttpServer, App, web::Data, web::scope, web, middleware::Logger};
-use actix_files::{Files, NamedFile};
-
-async fn index_file() -> actix_files::NamedFile {
-    NamedFile::open("./dist/index.html").unwrap()
-}
+use actix_web::{HttpServer, App, web::Data, web::scope, middleware::Logger};
+use actix_web_lab::web::spa;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -47,10 +43,12 @@ async fn main() -> std::io::Result<()> {
                     .service(fail_task)
             )
             .service(
-                Files::new("/", "./dist")
-                    .index_file("index.html")
+                spa()
+                .index_file("./dist/index.html")
+                .static_resources_mount("/")
+                .static_resources_location("./dist")
+                .finish()
             )
-            .default_service(web::get().to(index_file))
 
     })
     .bind(("0.0.0.0", 80))?
