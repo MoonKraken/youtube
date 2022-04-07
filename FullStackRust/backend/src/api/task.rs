@@ -1,5 +1,5 @@
-use crate::model::task::Task;
-use crate::model::task::TaskState;
+use common::model::task::Task;
+use common::model::task::TaskState;
 use crate::repository::ddb::DDBRepository;
 use actix_web::{
     get, 

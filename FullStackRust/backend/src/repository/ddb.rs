@@ -1,7 +1,7 @@
 use aws_sdk_dynamodb::Client;
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_config::Config;
-use crate::model::task::{Task, TaskState};
+use common::model::task::{Task, TaskState};
 use log::error;
 use std::str::FromStr;
 use std::collections::HashMap;
@@ -101,7 +101,6 @@ impl DDBRepository {
                 match output.items {
                     Some(items) => {
                         let item = &items.first()?;
-                        error!("{:?}", &item);
                         match item_to_task(item) {
                             Ok(task) => Some(task),
                             Err(_) => None

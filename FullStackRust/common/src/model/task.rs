@@ -1,8 +1,8 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use strum_macros::{EnumString, Display};
 
-#[derive(Serialize, EnumString, Display, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, EnumString, Display, Eq, PartialEq, Clone, Debug)]
 pub enum TaskState {
     NotStarted,
     InProgress,
@@ -11,7 +11,7 @@ pub enum TaskState {
     Failed
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Task {
     pub user_uuid: String,
     pub task_uuid: String,
