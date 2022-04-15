@@ -47,7 +47,6 @@ pub enum UserSubcommand {
 #[derive(Debug, Args)]
 pub struct CreateUser {
     /// The name of the user
-    #[clap(short, long)]
     pub name: String,
 
     /// The email of the user
