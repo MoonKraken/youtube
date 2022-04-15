@@ -4,7 +4,7 @@ use clap::{
     Subcommand
 };
 
-#[derive(Debug, Parser)]
+#[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct RustflixArgs {
     #[clap(subcommand)]
@@ -13,18 +13,18 @@ pub struct RustflixArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum EntityType {
-    /// Crate, update, delete or show users
-    User(User),
+    /// Create, update, delete or show users
+    User(UserCommand),
 
     /// Create, update, delete or show videos
-    Video(Video),
+    Video(VideoCommand),
 
     /// Create or show views
     View(ViewCommand),
 }
 
 #[derive(Debug, Args)]
-pub struct User {
+pub struct UserCommand {
     #[clap(subcommand)]
     pub command: UserSubcommand,
 }
@@ -51,7 +51,6 @@ pub struct CreateUser {
     pub name: String,
 
     /// The email of the user
-    #[clap(short)]
     pub email: String,
 }
 
@@ -74,7 +73,7 @@ pub struct DeleteEntity {
 }
 
 #[derive(Debug, Args)]
-pub struct Video {
+pub struct VideoCommand {
     #[clap(subcommand)]
     pub command: VideoSubcommand,
 }

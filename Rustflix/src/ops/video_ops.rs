@@ -1,5 +1,5 @@
 use crate::args::{
-    Video, 
+    VideoCommand, 
     VideoSubcommand, 
     CreateVideo, 
     UpdateVideo, 
@@ -10,7 +10,7 @@ use crate::models::{NewVideo, Video as DBVideo};
 use crate::db::establish_connection;
 use diesel::prelude::*;
 
-pub fn handle_video_command(video: Video) {
+pub fn handle_video_command(video: VideoCommand) {
     let command = video.command;
     match command {
         VideoSubcommand::Create(video) => {

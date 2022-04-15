@@ -1,6 +1,6 @@
 use crate::args::{
     UserSubcommand, 
-    User, 
+    UserCommand, 
     CreateUser, 
     UpdateUser, 
     DeleteEntity
@@ -9,7 +9,7 @@ use crate::db::establish_connection;
 use crate::models::{NewUser, User as DBUser};
 use diesel::prelude::*;
 
-pub fn handle_user_command(user: User) {
+pub fn handle_user_command(user: UserCommand) {
     let command = user.command;
     match command {
         UserSubcommand::Create(user) => {
