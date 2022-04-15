@@ -1,12 +1,12 @@
-use crate::rustflix_args::{
+use crate::args::{
     UserSubcommand, 
     User, 
     CreateUser, 
     UpdateUser, 
     DeleteEntity
 };
-use crate::establish_connection;
-use rustflix_diesel::models::{NewUser, User as DBUser};
+use crate::db::establish_connection;
+use crate::models::{NewUser, User as DBUser};
 use diesel::prelude::*;
 
 pub fn handle_user_command(user: User) {
@@ -29,7 +29,7 @@ pub fn handle_user_command(user: User) {
 
 fn create_user(user: CreateUser) {
     println!("Creating user: {:?}", user);
-    use rustflix_diesel::schema::users::dsl::*;
+    use crate::schema::users::dsl::*;
 
     let connection = establish_connection();
     let new_user = NewUser {
@@ -46,7 +46,7 @@ fn create_user(user: CreateUser) {
 
 fn update_user(user: UpdateUser) {
     println!("Updating user: {:?}", user);
-    use rustflix_diesel::schema::users::dsl::*;
+    use crate::schema::users::dsl::*;
 
     let connection = establish_connection();
     let db_user = DBUser {
@@ -64,7 +64,7 @@ fn update_user(user: UpdateUser) {
 
 fn delete_user(user: DeleteEntity) {
     println!("Deleting user: {:?}", user);
-    use rustflix_diesel::schema::users::dsl::*;
+    use crate::schema::users::dsl::*;
 
     let connection = establish_connection();
     diesel::delete(users.find(user.id))
@@ -73,7 +73,7 @@ fn delete_user(user: DeleteEntity) {
 }
 
 fn show_users() {
-    use rustflix_diesel::schema::users::dsl::*;
+    use crate::schema::users::dsl::*;
 
     let connection = establish_connection();
     let results = users

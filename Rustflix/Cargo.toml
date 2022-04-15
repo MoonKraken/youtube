@@ -2,7 +2,8 @@
 name = "rustflix-diesel"
 version = "0.1.0"
 edition = "2021"
-
+authors = ["Code to the Moon"]
+description = "A CLI interface for a video streaming service?"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

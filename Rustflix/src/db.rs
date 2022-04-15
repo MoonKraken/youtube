@@ -1,14 +1,6 @@
-#[macro_use]
-extern crate diesel;
-extern crate dotenv;
-
-pub mod schema;
-pub mod models;
-
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
-use models::{User, Video, View, NewUser};
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();

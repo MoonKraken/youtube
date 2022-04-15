@@ -1,4 +1,4 @@
-use crate::rustflix_args::{
+use crate::args::{
     Video, 
     VideoSubcommand, 
     CreateVideo, 
@@ -6,8 +6,8 @@ use crate::rustflix_args::{
     DeleteEntity
 };
 
-use rustflix_diesel::models::{NewVideo, Video as DBVideo};
-use rustflix_diesel::establish_connection;
+use crate::models::{NewVideo, Video as DBVideo};
+use crate::db::establish_connection;
 use diesel::prelude::*;
 
 pub fn handle_video_command(video: Video) {
@@ -30,7 +30,7 @@ pub fn handle_video_command(video: Video) {
 
 pub fn create_video(video: CreateVideo) {
     println!("Creating video: {:?}", video);
-    use rustflix_diesel::schema::videos::dsl::*;
+    use crate::schema::videos::dsl::*;
 
     let connection = establish_connection();
     let new_video = NewVideo {
@@ -47,7 +47,7 @@ pub fn create_video(video: CreateVideo) {
 
 pub fn update_video(video: UpdateVideo) {
     println!("Updating video: {:?}", video);
-    use rustflix_diesel::schema::videos::dsl::*;
+    use crate::schema::videos::dsl::*;
 
     let connection = establish_connection();
     let db_video = DBVideo {
@@ -65,7 +65,7 @@ pub fn update_video(video: UpdateVideo) {
 
 pub fn delete_video(video: DeleteEntity) {
     println!("Deleting video: {:?}", video);
-    use rustflix_diesel::schema::videos::dsl::*;
+    use crate::schema::videos::dsl::*;
 
     let connection = establish_connection();
     diesel::delete(videos.find(video.id))
@@ -75,7 +75,7 @@ pub fn delete_video(video: DeleteEntity) {
 
 pub fn show_videos() {
     println!("Showing videos");
-    use rustflix_diesel::schema::videos::dsl::*;
+    use crate::schema::videos::dsl::*;
 
     let connection = establish_connection();
     let results = videos

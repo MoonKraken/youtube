@@ -1,10 +1,10 @@
-use crate::rustflix_args::{
+use crate::args::{
     ViewSubcommand,
     ViewCommand, 
     CreateView,
 };
-use rustflix_diesel::establish_connection;
-use rustflix_diesel::models::{
+use crate::db::establish_connection;
+use crate::models::{
     View as DBView, 
     NewView
 };
@@ -27,7 +27,7 @@ pub fn handle_view_command(view: ViewCommand) {
 
 fn create_view(new_view: CreateView) {
     println!("Creating view: {:?}", new_view);
-    use rustflix_diesel::schema::views::dsl::*;
+    use crate::schema::views::dsl::*;
 
     let connection = establish_connection();
     let new_view = NewView {
@@ -46,7 +46,7 @@ fn create_view(new_view: CreateView) {
 fn show_views() {
     println!("Showing views");
 
-    use rustflix_diesel::schema::views::dsl::*;
+    use crate::schema::views::dsl::*;
 
     let connection = establish_connection();
 
@@ -63,9 +63,9 @@ fn show_views() {
 fn show_views_pretty() {
     println!("Showing views");
 
-    use rustflix_diesel::schema::views;
-    use rustflix_diesel::schema::videos;
-    use rustflix_diesel::schema::users;
+    use crate::schema::views;
+    use crate::schema::videos;
+    use crate::schema::users;
 
     let connection = establish_connection();
 

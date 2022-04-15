@@ -1,22 +1,29 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{
+    Args, 
+    Parser, 
+    Subcommand
+};
 
-#[derive(Parser, Debug)]
+#[derive(Debug, Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct RustflixArgs {
-    /// The data that proceding arguments should apply to - user, video or view
     #[clap(subcommand)]
-    pub data_type: DataType,
+    pub entity_type: EntityType,
 }
 
 #[derive(Debug, Subcommand)]
-pub enum DataType {
+pub enum EntityType {
+    /// Crate, update, delete or show users
     User(User),
+
+    /// Create, update, delete or show videos
     Video(Video),
+
+    /// Create or show views
     View(ViewCommand),
 }
 
 #[derive(Debug, Args)]
-#[clap(args_conflicts_with_subcommands = true)]
 pub struct User {
     #[clap(subcommand)]
     pub command: UserSubcommand,
@@ -24,27 +31,45 @@ pub struct User {
 
 #[derive(Debug, Subcommand)]
 pub enum UserSubcommand {
+    /// Create a new user
     Create(CreateUser),
+
+    /// Update an existing user
     Update(UpdateUser),
+
+    /// Delete a user
     Delete(DeleteEntity),
+
+    /// Show all users
     Show,
 }
 
 #[derive(Debug, Args)]
 pub struct CreateUser {
+    /// The name of the user
+    #[clap(short, long)]
     pub name: String,
+
+    /// The email of the user
+    #[clap(short)]
     pub email: String,
 }
 
 #[derive(Debug, Args)]
 pub struct UpdateUser {
+    /// The id of the user to update
     pub id: i32,
+
+    /// The name of the user
     pub name: String,
+
+    /// The email of the user
     pub email: String,
 }
 
 #[derive(Debug, Args)]
 pub struct DeleteEntity {
+    /// The id of the entity to delete
     pub id: i32,
 }
 
@@ -56,22 +81,37 @@ pub struct Video {
 
 #[derive(Debug, Subcommand)]
 pub enum VideoSubcommand {
+    /// Create a new video
     Create(CreateVideo),
+
+    /// Update an existing video
     Update(UpdateVideo),
+
+    /// Delete a video
     Delete(DeleteEntity),
+
+    /// Show all videos
     Show,
 }
 
 #[derive(Debug, Args)]
 pub struct CreateVideo {
+    /// The title of the video to create
     pub title: String,
+
+    /// The description of the video to create
     pub description: String,
 }
 
 #[derive(Debug, Args)]
 pub struct UpdateVideo {
+    /// The id of the video to update
     pub id: i32,
+
+    /// The title of the video
     pub title: String,
+
+    /// The description of the video
     pub description: String,
 }
 
@@ -83,15 +123,27 @@ pub struct ViewCommand {
 
 #[derive(Debug, Subcommand)]
 pub enum ViewSubcommand {
+    /// Create a new view
     Create(CreateView),
+
+    /// Show all views with id numbers for users and videos
     Show,
+
+    /// Show all views with names for users and videos
     ShowPretty
 }
 
 #[derive(Debug, Args)]
 pub struct CreateView {
+    /// The id of the user who watched the video
     pub user_id: i32,
+
+    /// The id of the video the user watched
     pub video_id: i32,
+
+    /// The time the user watched the video
     pub watch_start: chrono::NaiveDateTime,
+
+    /// How long the user watched the video for
     pub duration: i32,
 }
