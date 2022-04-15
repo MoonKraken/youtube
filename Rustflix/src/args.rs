@@ -5,7 +5,7 @@ use clap::{
 };
 
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
+#[clap(author, version, about)]
 pub struct RustflixArgs {
     #[clap(subcommand)]
     pub entity_type: EntityType,
