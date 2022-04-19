@@ -6,7 +6,7 @@ use crate::args::{
     DeleteEntity
 };
 
-use crate::models::{NewVideo, Video as DBVideo};
+use crate::models::{NewVideo, Video};
 use crate::db::establish_connection;
 use diesel::prelude::*;
 
@@ -50,7 +50,7 @@ pub fn update_video(video: UpdateVideo) {
     use crate::schema::videos::dsl::*;
 
     let connection = establish_connection();
-    let db_video = DBVideo {
+    let db_video = Video {
         id: video.id,
         title: video.title,
         description: video.description,
@@ -80,7 +80,7 @@ pub fn show_videos() {
     let connection = establish_connection();
     let results = videos
         .filter(removed.eq(false))
-        .load::<DBVideo>(&connection)
+        .load::<Video>(&connection)
         .expect("Error loading videos");
 
     println!("Displaying {} videos", results.len());
