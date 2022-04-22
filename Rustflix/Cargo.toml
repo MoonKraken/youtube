@@ -1,0 +1,13 @@
+[package]
+name = "rustflix"
+version = "0.1.0"
+edition = "2021"
+authors = ["Code to the Moon"]
+description = "A CLI interface for a video streaming service?"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+diesel = { version = "1.4.4", features = ["postgres", "chrono"] }
+dotenv = "0.15.0"
+chrono = "^0"
+clap = { version = "3.1.9", features = ["derive"] }
