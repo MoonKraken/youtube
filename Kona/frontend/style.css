@@ -1,0 +1,12 @@
+table {
+    margin-left: auto;
+    margin-right: auto;
+    font-family:'Gilroy', sans-serif;
+    font-size: 36px;
+    width: 75%;
+}
+
+body {
+    color: white;
+    background-color: black
+}
