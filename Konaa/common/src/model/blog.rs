@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use super::post::Post;
 
 #[derive(Serialize)]
 pub struct BlogIdentifier {
@@ -6,11 +7,17 @@ pub struct BlogIdentifier {
 }
 
 #[derive(Deserialize)]
-pub struct Blog {
+pub struct NewBlog {
     pub blog_id: String,
     pub title: String,
-    pub author_name: String,
-    pub author_id: String,
+    pub owner: String,
     pub description: String,
     pub style: String,
+}
+
+#[derive(Deserialize)]
+pub struct Blog {
+    pub title: String,
+    pub about: String,
+    pub posts: Vec<Post>,
 }

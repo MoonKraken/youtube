@@ -2,7 +2,7 @@ use aws_sdk_dynamodb::Client;
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_config::Config;
 use common::model::post::Post;
-use common::model::blog::Blog;
+use common::model::blog::NewBlog;
 use log::error;
 use std::collections::HashMap;
 use chrono::{DateTime, Utc};
@@ -74,7 +74,7 @@ impl DDBRepository {
         }
     }
 
-    pub async fn put_blog(&self, blog: Blog) -> Result<(), DDBError> {
+    pub async fn put_blog(&self, blog: NewBlog) -> Result<(), DDBError> {
         let mut request = self.client.put_item()
             .table_name(&self.table_name)
             .item("pK", AttributeValue::S(String::from(blog.blog_id)))
@@ -93,24 +93,23 @@ impl DDBRepository {
     pub async fn get_posts(
         &self, 
         blog_id: String, 
-        oldest: DateTime<Tz>,
-        newest: DateTime<Tz>
+        oldest: String,
+        newest: String,
     ) -> Vec<Post> {
         error!("GetPosts {} {}",
-            Utc::now().to_rfc3339(),
-            DateTime::from_timestamp(0, 0).to_rfc3339()
+            oldest.clone(),
+            newest.clone()
         );
-
 
         let res = self.client
             .query()
             .table_name(&self.table_name)
-            .key_condition_expression("#blog_id = :blog_id and #post_id between :oldest and :newest")
+            .key_condition_expression("#blog_id = :blog_id and #post_id between :newest and :oldest")
             .expression_attribute_names("#blog_id", "pK")
             .expression_attribute_names("#post_id", "sK")
             .expression_attribute_values(":blog_id", AttributeValue::S(blog_id))
-            .expression_attribute_values(":newest", newest_query_datetime)
-            .expression_attribute_values(":oldest", oldest_query_datetime)
+            .expression_attribute_values(":newest", AttributeValue::S(oldest))
+            .expression_attribute_values(":oldest", AttributeValue::S(newest))
             .send()
             .await;
 

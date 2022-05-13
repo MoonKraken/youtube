@@ -1,52 +1,13 @@
 use crate::repository::ddb::DDBRepository;
 use actix_web::{
-    get, 
     post,
     web::Path,
     web::Json,
     web::Data,
-    web::Query,
 };
-use serde::Deserialize;
 use common::model::post::{PostIdentifier, NewPost, Post};
 use super::error::BlogError;
-use chrono::DateTime;
 use chrono::Utc;
-
-#[derive(Debug, Deserialize)]
-pub struct DateTimeRange {
-    earliest: Option<i64>,
-    latest: Option<i64>,
-}
-
-fn epoch_to_naive_dt(epoch: i64) -> DateTime<Tz::Utc> {
-    DateTime::from_timestamp(epoch, 0)
-}
-
-#[get("/{blog_id}")]
-pub async fn get_posts(
-    ddb_repo: Data<DDBRepository>, 
-    blog_id: Path<String>,
-    date_range: Query<DateTimeRange>,
-) -> Json<Vec<Post>> {
-    let inner = date_range.into_inner();
-
-    let earliest = inner.earliest
-        .map(epoch_to_naive_dt)
-        .expect(DateTime::from_timestamp(0, 0).to_rfc3339());
-
-    let latest = inner.latest
-        .map(epoch_to_naive_dt)
-        .expect(Utc::now().to_rfc3339());
-
-    let posts = ddb_repo.get_posts(
-        blog_id.into_inner(),
-        earliest,
-        latest,
-    ).await;
-
-    Json(posts)
-}
 
 #[post("/{blog_id}")]
 pub async fn create_post(

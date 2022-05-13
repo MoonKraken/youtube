@@ -19,3 +19,4 @@ log = "^0.4"
 common = { path = "../common" }
 chrono = "^0"
 uuid = { version = "^0.8", features = ["v4", "wasm-bindgen"] }
+derive_more = "^0"

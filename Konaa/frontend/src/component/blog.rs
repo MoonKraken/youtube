@@ -2,6 +2,7 @@ use reqwasm::http::Request;
 use common::model::blog::Blog;
 use common::model::post::Post;
 use yew::prelude::*;
+use super::post::Post;
 
 async fn get_blog(id: &String) -> Vec<Post> {
     let url = format!("/api/{}", id);
@@ -29,8 +30,8 @@ fn post_to_html(post: &Post) -> Html {
     }
 }
 
-#[function_component(BlogView)]
-pub fn blog_view(props: &BlogViewProps) -> Html {
+#[function_component(Blog)]
+pub fn blog(props: &BlogViewProps) -> Html {
     let blog_id = props.blog_id.clone();
     let posts = use_state(|| vec![]);
     {

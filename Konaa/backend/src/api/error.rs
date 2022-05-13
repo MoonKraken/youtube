@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use actix_web::{
     error::ResponseError,
     HttpResponse,
@@ -5,11 +6,13 @@ use actix_web::{
 };
 use serde::{Serialize};
 use strum::Display;
+//use derive_more::Display;
 
 #[derive(Debug, Display, Serialize)]
 pub enum BlogError {
     BlogNotFound,
-    PostCreationFailed
+    PostCreationFailed,
+    DateTimeParseError
 }
 
 impl ResponseError for BlogError {
@@ -23,6 +26,7 @@ impl ResponseError for BlogError {
         match self {
             BlogError::BlogNotFound => StatusCode::NOT_FOUND,
             BlogError::PostCreationFailed => StatusCode::FAILED_DEPENDENCY,
+            BlogError::DateTimeParseError => StatusCode::BAD_REQUEST
         }
     }
 }
