@@ -1,11 +1,10 @@
 use aws_sdk_dynamodb::Client;
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_config::Config;
-use common::model::post::Post;
-use common::model::blog::NewBlog;
+use common::model::{post::Post};
+use common::model::blog::{Blog, NewBlog};
 use log::error;
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
 
 pub struct DDBRepository {
     client: Client,
@@ -18,7 +17,10 @@ pub struct DDBError;
 fn required_item_value(key: &str, item: &HashMap<String, AttributeValue>) -> Result<String, DDBError> {
     match item_value(key, item) {
         Ok(Some(value)) => Ok(value),
-        Ok(None) => Err(DDBError),
+        Ok(None) => {
+            error!("required field {} was not present", key);
+            Err(DDBError)
+        },
         Err(DDBError) => Err(DDBError)
     }
 }
@@ -27,23 +29,47 @@ fn item_value(key: &str, item: &HashMap<String, AttributeValue>) -> Result<Optio
     match item.get(key) {
         Some(value) => match value.as_s() {
             Ok(val) => Ok(Some(val.clone())),
-            Err(_) => Err(DDBError)
+            Err(err) => {
+                error!("Error converting field {} to string", key);
+                error!("{:?}", err);
+                Err(DDBError)
+            }
         },
         None => Ok(None)
     }
 }
 
-fn item_to_post(item: &HashMap<String, AttributeValue>) -> Result<Post, DDBError> {
-    let title = item_value("title", item)?;
+fn items_to_blog(items: Vec<HashMap<String, AttributeValue>>) -> Result<Blog, DDBError> {
+    let mut blog = Blog {
+        title: None,
+        about: None,
+        subtitle: None,
+        posts: vec![],
+    };
 
-    Ok(Post {
-        blog_id: required_item_value("pK", item)?,
-        post_id: required_item_value("sK", item)?,
-        author_name: required_item_value("author_name", item)?,
-        author_id: required_item_value("author_id", item)?,
-        title: title,
-        content: required_item_value("content", item)?,
-    })
+    for item in items {
+        let sK = required_item_value("sK", &item)?;
+        match sK.as_str() {
+            "meta" => {
+                blog.title = Some(required_item_value("title", &item)?);
+                blog.subtitle = Some(required_item_value("subtitle", &item)?);
+                blog.about = Some(required_item_value("about", &item)?);
+            },
+            _ => {
+                error!("Matched post!");
+                let title = item_value("title", &item)?;
+                blog.posts.push(Post {
+                    blog_id: required_item_value("pK", &item)?,
+                    post_id: sK,
+                    author: required_item_value("author", &item)?,
+                    title,
+                    content: required_item_value("content", &item)?,
+                });
+            }
+        }
+    };
+
+    Ok(blog)
 }
 
 impl DDBRepository {
@@ -60,8 +86,7 @@ impl DDBRepository {
             .table_name(&self.table_name)
             .item("pK", AttributeValue::S(String::from(post.blog_id)))
             .item("sK", AttributeValue::S(String::from(post.post_id)))
-            .item("author_name", AttributeValue::S(String::from(post.author_name)))
-            .item("author_id", AttributeValue::S(String::from(post.author_id)))
+            .item("author", AttributeValue::S(String::from(post.author)))
             .item("content", AttributeValue::S(String::from(post.content)));
         
         if let Some(title) = post.title {
@@ -75,14 +100,12 @@ impl DDBRepository {
     }
 
     pub async fn put_blog(&self, blog: NewBlog) -> Result<(), DDBError> {
-        let mut request = self.client.put_item()
+        let request = self.client.put_item()
             .table_name(&self.table_name)
             .item("pK", AttributeValue::S(String::from(blog.blog_id)))
-            .item("sK", AttributeValue::S(String::from("About")))
-            .item("author_name", AttributeValue::S(String::from(blog.author_name)))
-            .item("author_id", AttributeValue::S(String::from(blog.author_id)))
-            .item("description", AttributeValue::S(String::from(blog.description)))
-            .item("style", AttributeValue::S(String::from(blog.style)));
+            .item("sK", AttributeValue::S(String::from("")))
+            .item("title", AttributeValue::S(String::from(blog.title.clone())))
+            .item("about", AttributeValue::S(String::from(blog.about.clone())));
 
         match request.send().await {
             Ok(_) => Ok(()),
@@ -90,40 +113,47 @@ impl DDBRepository {
         }
     }
 
-    pub async fn get_posts(
+    pub async fn get_blog(
         &self, 
         blog_id: String, 
-        oldest: String,
-        newest: String,
-    ) -> Vec<Post> {
-        error!("GetPosts {} {}",
+        oldest: Option<String>,
+        newest: Option<String>,
+    ) -> Result<Blog, DDBError> {
+        error!("GetPosts {:?} {:?}",
             oldest.clone(),
-            newest.clone()
+            newest.clone(),
         );
 
-        let res = self.client
+        let mut res = self.client
             .query()
             .table_name(&self.table_name)
-            .key_condition_expression("#blog_id = :blog_id and #post_id between :newest and :oldest")
             .expression_attribute_names("#blog_id", "pK")
-            .expression_attribute_names("#post_id", "sK")
             .expression_attribute_values(":blog_id", AttributeValue::S(blog_id))
-            .expression_attribute_values(":newest", AttributeValue::S(oldest))
-            .expression_attribute_values(":oldest", AttributeValue::S(newest))
-            .send()
-            .await;
+            .key_condition_expression("#blog_id = :blog_id");
+            
+        if oldest.is_some() || newest.is_some() {
+            res = res.expression_attribute_names("#post_id", "sK")
+        }
 
-        return match res {
-            Ok(output) => {
-                output.items
-                    .expect("No items in response")
-                    .iter()
-                    .map(|item| item_to_post(item).expect("Couldn't convert item to post"))
-                    .collect()
+        if let Some(oldest) = oldest {
+            res = res.expression_attribute_values(":oldest", AttributeValue::S(oldest))
+            .key_condition_expression("#post_id > :oldest")
+        }
+
+        if let Some(newest) = newest {
+            res = res.expression_attribute_values(":newest", AttributeValue::S(newest))
+            .key_condition_expression("#post_id < :newest")
+        }
+
+        match res.send().await {
+            Ok(res) => {
+                error!("DDB request succeeded");
+                let items = res.items.ok_or(DDBError)?;
+                items_to_blog(items)
             },
-            Err(error) => {
-                error!("{:?}", error);
-                vec![]
+            Err(err) => {
+                error!("{}", err.to_string());
+                Err(DDBError)
             }
         }
     }

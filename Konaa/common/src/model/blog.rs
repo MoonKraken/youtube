@@ -6,18 +6,18 @@ pub struct BlogIdentifier {
     pub blog_id: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct NewBlog {
     pub blog_id: String,
     pub title: String,
-    pub owner: String,
-    pub description: String,
-    pub style: String,
+    pub subtitle: String,
+    pub about: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Blog {
-    pub title: String,
-    pub about: String,
+    pub title: Option<String>,
+    pub about: Option<String>,
+    pub subtitle: Option<String>,
     pub posts: Vec<Post>,
 }

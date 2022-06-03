@@ -2,15 +2,15 @@ use crate::repository::ddb::DDBRepository;
 use actix_web::{
     post,
     get,
-    web::Json,
-    web::Data,
-    web::Path,
-    web::Data,
-    web::Query,
+    web::{
+        Json,
+        Data,
+        Query,
+        Path,
+    },
 };
-use chrono::{DateTime, FixedOffset};
-use chrono::Utc;
-use crate::api::error::BlogError::DateTimeParseError;
+use log::error;
+use chrono::{DateTime};
 use serde::Deserialize;
 use common::model::blog::{BlogIdentifier, NewBlog, Blog};
 use super::error::BlogError;
@@ -42,14 +42,19 @@ pub struct DateTimeRange {
     latest: Option<String>,
 }
 
-fn validate_or_default_dt(dt: Option<String>, default: DateTime<FixedOffset>) -> Result<String, BlogError> {
-    let res = dt
-        .map(|datetime| DateTime::parse_from_rfc3339(datetime.as_str()))
-        .unwrap_or(Ok(default))
-        .map_err(|_| DateTimeParseError)?
-        .to_rfc3339();
-
-    Ok(res)
+fn validate_dt(
+    dt: Option<String>,
+) -> Result<(), BlogError> {
+    match dt {
+        Some(dt) => {
+            let datetime = DateTime::parse_from_rfc3339(dt.as_str());
+            match datetime {
+                Ok(_) => Ok(()),
+                Err(_) => Err(BlogError::DateTimeParseError)
+            }
+        },
+        None => Ok(())
+    }
 }
 
 #[get("/{blog_id}")]
@@ -57,24 +62,20 @@ pub async fn get_blog(
     ddb_repo: Data<DDBRepository>, 
     blog_id: Path<String>,
     date_range: Query<DateTimeRange>,
-) -> Result<Blog, BlogError> {
+) -> Result<Json<Blog>, BlogError> {
     let inner = date_range.into_inner();
 
-    let earliest = validate_or_default_dt(
-        inner.earliest,
-        DateTime::from(Utc.timestamp(0, 0))
-    )?;
+    validate_dt(inner.earliest.clone())?;
+    validate_dt(inner.latest.clone())?;
 
-    let latest = validate_or_default_dt(
-        inner.latest,
-        DateTime::from(Utc::now())
-    )?;
-
-    let posts = ddb_repo.get_posts(
+    let blog = ddb_repo.get_blog(
         blog_id.into_inner(),
-        earliest,
-        latest,
-    ).await;
-
-    Ok(Json(posts))
+        inner.earliest,
+        inner.latest,
+    )
+    .await
+    .map_err(|_| {
+        BlogError::BlogNotFound
+    })?;
+    Ok(Json(blog))
 }

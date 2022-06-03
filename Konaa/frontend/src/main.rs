@@ -1,9 +1,6 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
-use reqwasm::http::Request;
-use common::model::blog::Blog;
-use common::model::post::Post;
-use component::blog::BlogView;
+use component::blog::Blog;
 
 pub mod component;
 

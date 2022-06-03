@@ -21,8 +21,7 @@ pub async fn create_post(
     let new_post = Post {
         blog_id: blog_id.clone(),
         post_id: post_id.clone(),
-        author_name: req.author_name,
-        author_id: req.author_id,
+        author: req.author,
         title: req.title,
         content: req.content
     };
@@ -58,8 +57,7 @@ pub async fn create_comment(
     let new_post = Post {
         blog_id: blog_id.clone(),
         post_id: post_id.clone(),
-        author_name: req.author_name,
-        author_id: req.author_id,
+        author: req.author,
         title: req.title,
         content: req.content
     };

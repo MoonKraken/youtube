@@ -1,10 +1,10 @@
 use reqwasm::http::Request;
-use common::model::blog::Blog;
+use common::model::blog::Blog as BlogModel;
 use common::model::post::Post;
 use yew::prelude::*;
 use super::post::Post;
 
-async fn get_blog(id: &String) -> Vec<Post> {
+async fn get_blog(id: &String) -> BlogModel {
     let url = format!("/api/{}", id);
     return Request::get(&url).send().await.unwrap().json().await.unwrap();
 }
@@ -34,13 +34,17 @@ fn post_to_html(post: &Post) -> Html {
 pub fn blog(props: &BlogViewProps) -> Html {
     let blog_id = props.blog_id.clone();
     let posts = use_state(|| vec![]);
+    let title = use_state(|| vec![]);
+    let subtitle = use_state(|| vec![]);
     {
         let posts = posts.clone();
         use_effect_with_deps(move |_| {
             let posts = posts.clone();
             wasm_bindgen_futures::spawn_local( async move {
-                let fetched_posts = get_blog(&blog_id).await;
-                posts.set(fetched_posts);
+                let blog: BlogModel = get_blog(&blog_id).await;
+                posts.set(blog.posts);
+                blog.title(|title| title.set(blog.title));
+                subtitle.set(blog.subtitle);
             });
             || ()
         },());
@@ -50,7 +54,7 @@ pub fn blog(props: &BlogViewProps) -> Html {
         (*posts).iter().map(|post| post_to_html(post));
 
     if posts_view.len() > 0 {
-        return html! {
+        return html!{
             <>
                 {posts_view.collect::<Html>()}
             </>
@@ -59,3 +63,4 @@ pub fn blog(props: &BlogViewProps) -> Html {
         return html! { <div>{"Loading..."}</div> }
     }
 }
+

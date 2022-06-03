@@ -2,12 +2,12 @@ mod api;
 mod repository;
 
 use api::blog::{
-    create_blog
+    create_blog,
+    get_blog
 };
 use api::post::{
     create_comment,
     create_post,
-    get_posts
 };
 
 use repository::ddb::DDBRepository;
@@ -23,7 +23,7 @@ async fn main() -> std::io::Result<()> {
     let config = aws_config::load_from_env().await;
     HttpServer::new(move || {
         let ddb_repo: DDBRepository = DDBRepository::init(
-            String::from("post"),
+            String::from("posts"),
             config.clone()
         );
         let ddb_data = Data::new(
@@ -39,7 +39,7 @@ async fn main() -> std::io::Result<()> {
                     .service(create_blog)
                     .service(create_post)
                     .service(create_comment)
-                    .service(get_posts)
+                    .service(get_blog)
             )
             .service(
                 spa()

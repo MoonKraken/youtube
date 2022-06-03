@@ -1,6 +1,6 @@
 <script lang="ts">
-    export let title;
-    export let subtitle;
+    export let title: string;
+    export let subtitle: string;
 </script>
 
 <nav>
