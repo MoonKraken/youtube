@@ -2,7 +2,6 @@ use reqwasm::http::Request;
 use common::model::blog::Blog as BlogModel;
 use common::model::post::Post;
 use yew::prelude::*;
-use super::post::Post;
 
 async fn get_blog(id: &String) -> BlogModel {
     let url = format!("/api/{}", id);
@@ -34,8 +33,8 @@ fn post_to_html(post: &Post) -> Html {
 pub fn blog(props: &BlogViewProps) -> Html {
     let blog_id = props.blog_id.clone();
     let posts = use_state(|| vec![]);
-    let title = use_state(|| vec![]);
-    let subtitle = use_state(|| vec![]);
+    let title = use_state(|| String::new());
+    let subtitle = use_state(|| String::new());
     {
         let posts = posts.clone();
         use_effect_with_deps(move |_| {
@@ -43,8 +42,8 @@ pub fn blog(props: &BlogViewProps) -> Html {
             wasm_bindgen_futures::spawn_local( async move {
                 let blog: BlogModel = get_blog(&blog_id).await;
                 posts.set(blog.posts);
-                blog.title(|title| title.set(blog.title));
-                subtitle.set(blog.subtitle);
+                blog.title.map(|blog_title| title.set(blog_title));
+                blog.subtitle.map(|blog_subtitle| subtitle.set(blog_subtitle));
             });
             || ()
         },());
