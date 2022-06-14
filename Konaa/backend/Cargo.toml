@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+yew = { git = "https://github.com/yewstack/yew.git", features = ["ssr", "tokio"] }
+frontend = { path = "../frontend" }
 actix-web = "^4"
 actix-files = "0.6"
 actix-web-lab = "^0"

@@ -1,6 +1,7 @@
 mod api;
 mod repository;
 
+use std::fs;
 use api::blog::{
     create_blog,
     get_blog
@@ -11,8 +12,27 @@ use api::post::{
 };
 
 use repository::ddb::DDBRepository;
-use actix_web::{HttpServer, App, web::Data, web::scope, middleware::Logger};
-use actix_web_lab::web::spa;
+use actix_web::{HttpServer, App, web::Data, Error, web::scope, middleware::Logger, get, HttpResponse, HttpRequest};
+use actix_files as actix_fs;
+use yew::ServerRenderer;
+use frontend::{ServerApp, App as YewApp, ServerAppProps};
+
+#[get("/{tail:.*}")]
+async fn render_yew_app(req: HttpRequest) -> Result<HttpResponse, Error> {
+    let index_html_s = fs::read_to_string("./dist/index.html").unwrap();
+    let server_app_props = ServerAppProps {
+        url: req.uri().to_string().into(),
+    };
+
+    let content = ServerRenderer
+        ::<ServerApp>
+        ::with_props(server_app_props).render().await;
+
+    Ok(HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(index_html_s.replace("<body>", &format!("<body>{}", content)))
+    )
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -42,13 +62,9 @@ async fn main() -> std::io::Result<()> {
                     .service(get_blog)
             )
             .service(
-                spa()
-                .index_file("./dist/index.html")
-                .static_resources_mount("/")
-                .static_resources_location("./dist")
-                .finish()
+                actix_fs::Files::new("/dist", "./dist")
             )
-
+            .service(render_yew_app)
     })
     .bind(("0.0.0.0", 80))?
     .run()

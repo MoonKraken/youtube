@@ -52,6 +52,8 @@ pub fn blog(props: &BlogViewProps) -> Html {
     let posts_view =
         (*posts).iter().map(|post| post_to_html(post));
 
+    let current_time: String = chrono::Local::now().to_string();
+
     if posts_view.len() > 0 {
         return html!{
             <>
@@ -59,7 +61,12 @@ pub fn blog(props: &BlogViewProps) -> Html {
             </>
         }
     } else {
-        return html! { <div>{"Loading..."}</div> }
+        return html! {
+            <>
+                <h5>{"Render Time "} {current_time}</h5>
+                <div>{"Loading..."}</div>
+            </>
+        }
     }
 }
 
