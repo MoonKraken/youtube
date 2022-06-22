@@ -1,0 +1,5 @@
+[build]
+public_url = "/dist/"
+
+[[proxy]]
+backend = "http://localhost:80/api"
