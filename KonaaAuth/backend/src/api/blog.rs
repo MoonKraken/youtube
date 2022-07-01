@@ -11,7 +11,7 @@ use actix_web::{
     },
     HttpRequest,
 };
-use log::error;
+use log::{info, error};
 use chrono::{DateTime};
 use serde::Deserialize;
 use common::model::blog::{BlogIdentifier, NewBlog, Blog};
@@ -67,8 +67,12 @@ pub async fn get_blog(
     request: HttpRequest,
 ) -> Result<Json<Blog>, BlogError> {
     let keyset = KeySet::new("us-west-2", "us-west-2_7XdFXdQUm")
-        .expect("Issue creating keyset");
-    let verifier = keyset.new_access_token_verifier(&["604tk757p8f5b61m4n7od2fj48"]).build().expect("Issue with verification");
+        .expect("TODO better error handling");
+
+    let verifier = keyset
+        .new_access_token_verifier(&["604tk757p8f5b61m4n7od2fj48"])
+        .build()
+        .expect("Issue with verification");
     
     let auth_header: &str = request
         .headers()
@@ -77,14 +81,17 @@ pub async fn get_blog(
         .to_str()
         .expect("Error converting to str");
 
-    let verified = keyset.verify(auth_header, &verifier).await;
+    let verified = keyset.verify(
+        auth_header,
+        &verifier
+    ).await;
+
     if let Ok(val) = verified {
-        error!("blabhalsfowijefojwef");
-        error!("{:?}", val);
+        info!("Token verified successfully");
     } else {
+        error!("Token verification failed");
         return Err(BlogError::Unauthorized);
     }
-    error!("asoijwefoijef");
 
     let inner = date_range.into_inner();
     validate_dt(inner.earliest.clone())?;

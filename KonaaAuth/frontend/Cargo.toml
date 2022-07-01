@@ -17,5 +17,4 @@ wasm-logger = "^0.2"
 common = { path="../common" }
 chrono = { version = "^0", features = ["wasmbind"] }
 yew-oauth2 = { version = "0.3", features = ["router"] }
-oauth2 = "4.1"
 yew-router = { version = "0.16", package = "yew-router-nested" } 

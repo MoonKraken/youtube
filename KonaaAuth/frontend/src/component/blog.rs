@@ -8,8 +8,7 @@ async fn get_blog(id: &String, token: &str) -> BlogModel {
     let url = format!("/api/{}", id);
     return Request::
         get(&url)
-        //.header("Authorization", token)
-        .header("Authorization", "asdf")
+        .header("Authorization", token)
         .send()
         .await
         .unwrap()

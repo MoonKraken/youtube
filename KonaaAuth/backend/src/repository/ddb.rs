@@ -118,11 +118,6 @@ impl DDBRepository {
         oldest: Option<String>,
         newest: Option<String>,
     ) -> Result<Blog, DDBError> {
-        error!("GetPosts {:?} {:?}",
-            oldest.clone(),
-            newest.clone(),
-        );
-
         let mut res = self.client
             .query()
             .table_name(&self.table_name)

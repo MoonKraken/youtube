@@ -26,11 +26,6 @@ pub struct TokenBody {
     redirect_uri: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct TokenStuff {
-    todo: String,
-}
-
 #[post("/token")]
 pub async fn token(
     body: Form<TokenBody>
@@ -45,19 +40,19 @@ pub async fn token(
         ).set_redirect_uri(RedirectUrl::new(req.redirect_uri).expect("Issue constructing Redirect url"));
    
     let pkce_verifier = PkceCodeVerifier::new(req.code_verifier);
-   let token_result = client.exchange_code(AuthorizationCode::new(req.code))
+    let token_result = client.exchange_code(AuthorizationCode::new(req.code))
        .set_pkce_verifier(pkce_verifier)
        .request_async(async_http_client)
        .await;
 
-   match token_result {
-       Err(err) => {
-           println!("{:?}", err.to_string());
-           panic!("o no");
-       }
-       Ok(val) => {
-           println!("{:?}", val);
-           Json(val)
-       }
-   }
+    match token_result {
+        Err(err) => {
+            println!("{:?}", err.to_string());
+            panic!("TODO better error handling here");
+        }
+        Ok(val) => {
+            println!("{:?}", val);
+            Json(val)
+        }
+    }
 }

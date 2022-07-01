@@ -24,4 +24,4 @@ chrono = "^0"
 uuid = { version = "^0.8", features = ["v4", "wasm-bindgen"] }
 derive_more = "^0"
 oauth2 = "4.2"
-jsonwebtokens-cognito = "0.1.0-alpha"
+jsonwebtokens-cognito = "0.1.1"
