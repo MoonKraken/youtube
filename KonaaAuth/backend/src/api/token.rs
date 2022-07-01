@@ -17,6 +17,7 @@ use oauth2::{
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use serde::{Serialize, Deserialize};
+use log::{info, error};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TokenBody {
@@ -47,11 +48,11 @@ pub async fn token(
 
     match token_result {
         Err(err) => {
-            println!("{:?}", err.to_string());
+            error!("{:?}", err.to_string());
             panic!("TODO better error handling here");
         }
         Ok(val) => {
-            println!("{:?}", val);
+            info!("Tokens received from OAuth provider!");
             Json(val)
         }
     }
