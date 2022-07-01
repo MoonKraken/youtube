@@ -46,7 +46,10 @@ pub fn app() -> Html {
                 </BrowserRouter>
             </Authenticated>
             <NotAuthenticated>
-                <p> { "You need to log in" } <button onclick={login.clone()}>{ "Login" }</button> </p>
+                <p> 
+                    { "You need to log in" } 
+                    <button onclick={login.clone()}>{ "Login" }</button> 
+                </p>
             </NotAuthenticated>
         </OAuth2>
     }
