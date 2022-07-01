@@ -28,29 +28,26 @@ pub fn app() -> Html {
     let logout = Callback::from(|_: MouseEvent| {
             OAuth2Dispatcher::<Client>::new().logout();
     });
+
+    let config = Config {
+        client_id: "604tk757p8f5b61m4n7od2fj48".into(),
+        auth_url: "https://konaa.auth.us-west-2.amazoncognito.com/login".into(),
+        token_url: "https://localhost/api/token".into(),
+    };
+
     return html! {
-        <>
-        <OAuth2
-            config={
-                Config {
-                    client_id: "604tk757p8f5b61m4n7od2fj48".into(),
-                    auth_url: "https://konaa.auth.us-west-2.amazoncognito.com/login".into(),
-                    token_url: "https://localhost/api/token".into(),
-                }
-            }
-        >
-                <Failure><FailureMessage/></Failure>
-                <Authenticated>
-                    <p> <button onclick={logout}>{ "Logout" }</button> </p>
-                    <h1>{"Authenticated!"}</h1>
-                    <BrowserRouter>
-                        <Switch<AppRoute> render={Switch::render(switch)}/>
-                    </BrowserRouter>
-                </Authenticated>
-                <NotAuthenticated>
-                    <p> { "You need to log in" } <button onclick={login.clone()}>{ "Login" }</button> </p>
-                </NotAuthenticated>
-            </OAuth2>
-            </>
+        <OAuth2 {config}>
+            <Failure><FailureMessage/></Failure>
+            <Authenticated>
+                <p> <button onclick={logout}>{ "Logout" }</button> </p>
+                <h1>{"Authenticated!"}</h1>
+                <BrowserRouter>
+                    <Switch<AppRoute> render={Switch::render(switch)}/>
+                </BrowserRouter>
+            </Authenticated>
+            <NotAuthenticated>
+                <p> { "You need to log in" } <button onclick={login.clone()}>{ "Login" }</button> </p>
+            </NotAuthenticated>
+        </OAuth2>
     }
 }
