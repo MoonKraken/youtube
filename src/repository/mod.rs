@@ -1,1 +1,1 @@
-pub mod ddb;
+pub mod db;

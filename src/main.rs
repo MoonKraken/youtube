@@ -10,7 +10,7 @@ use api::task::{
     pause_task,
     fail_task,
 };
-use repository::ddb::DDBRepository;
+use repository::db::DB;
 use actix_web::{HttpServer, App, web::Data, middleware::Logger};
 
 #[actix_web::main]
@@ -19,12 +19,8 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
 
-    let config = aws_config::load_from_env().await;
     HttpServer::new(move || {
-        let ddb_repo: DDBRepository = DDBRepository::init(
-            String::from("task"),
-            config.clone()
-        );
+        let ddb_repo: DB = DB::init();
         let ddb_data = Data::new(
             ddb_repo
         );
