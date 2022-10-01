@@ -1,2 +1,0 @@
-[[proxy]]
-backend = "http://localhost:80/api"
