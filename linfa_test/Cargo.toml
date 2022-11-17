@@ -1,0 +1,11 @@
+[package]
+name = "linfa_test"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+linfa = "0.6.0"
+linfa-trees = "0.6.0"
+ndarray = "0.15.6"

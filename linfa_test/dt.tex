@@ -1,0 +1,43 @@
+
+\documentclass[margin=10pt]{standalone}
+\usepackage{tikz,forest}
+\usetikzlibrary{arrows.meta}
+\forestset{
+default preamble={
+before typesetting nodes={
+  !r.replace by={[, coordinate, append]}
+},  
+where n children=0{
+  tier=word,
+}{  
+  %diamond, aspect=2,
+},  
+where level=0{}{
+  if n=1{
+    edge label={node[pos=.2, above] {Y}},
+  }{  
+    edge label={node[pos=.2, above] {N}},
+  }   
+},  
+for tree={
+  edge+={thick, -Latex},
+  s sep'+=2cm,
+  draw,
+  thick,
+  edge path'={ (!u) -| (.parent)},
+  align=center,
+}   
+}
+}\begin{document}\begin{forest}[Val($3$) $ \leq 0.50$ \\ Imp. $0.17$
+	[Val($2$) $ \leq 275.00$ \\ Imp. $0.44$
+		[Label: "Sad"]
+		[Label: "Happy"]]
+	[Val($2$) $ \leq 25.00$ \\ Imp. $0.11$
+		[Label: "Ok"]
+		[Label: "Happy"]]]
+\node [anchor=north west] at (current bounding box.north east) {%
+                \begin{tabular}{c c c}
+                  \multicolumn{3}{@{}l@{}}{Legend:}\\
+                  Imp.&:&Impurity decrease\\Var(3)&:&Ate Pizza\\Var(2)&:&Rust LOC\\\end{tabular}};
+	\end{forest}
+\end{document}
