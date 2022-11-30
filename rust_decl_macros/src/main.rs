@@ -43,6 +43,17 @@ macro_rules! set {
 }
 
 fn main() {
+    //apsiration
+    let some_set = HashSet::from([1,2,3]);
+    let some_set = set!(1 2 3);
+    dbg!(some_set);
+
+    //match
+    let thing = 5;
+    match thing {
+        a => println!("a arm"),
+        5 => println!("5 arm"),
+    }
     //0
     nothing_burger!();
 

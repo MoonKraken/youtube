@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::Write;
 
-use linfa_trees::{DecisionTree, SplitQuality};
 use ndarray::Array2;
 use linfa::prelude::*;
 use ndarray::prelude::*;
