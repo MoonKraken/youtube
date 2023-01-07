@@ -1,0 +1,13 @@
+name: crystal
+version: 0.1.0
+
+authors:
+  - Ken 🏈 <me163@mac.com>
+
+targets:
+  crystal:
+    main: src/crystal.cr
+
+crystal: 1.6.2
+
+license: MIT
