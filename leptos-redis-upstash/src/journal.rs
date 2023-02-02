@@ -6,6 +6,7 @@ use redis::Commands;
 use redis::Script;
 use leptos::ServerFnError::ServerError;
 use std::fs::File;
+use std::env;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -16,7 +17,9 @@ cfg_if! {
         }
 
         pub async fn redis_client() -> redis::Client {
-            redis::Client::open("redis://default:c6033e870d29415ab1b8ab96ba158b71@usw2-relative-tahr-30262.upstash.io:30262").unwrap()
+            let password = env::var("REDISCLI_AUTH").unwrap();
+            let redis_connection_string = format!("redis://default:{}@innocent-airedale-32691.upstash.io:32691", password);
+            redis::Client::open(redis_connection_string).unwrap()
         }
     }
 }
