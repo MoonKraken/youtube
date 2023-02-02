@@ -1,4 +1,3 @@
--- return {ARGV[1], ARGV[2], ARGV[3]}
 local entries_ss = ARGV[1] .. ':entries'
 local start_arg = '[' .. ARGV[2]
 local end_arg = '(' .. ARGV[3]
