@@ -1,7 +1,7 @@
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
-use crate::journal::{PutEntry, GetEntry, GetEntries};
+use crate::journal::{CreateEntry, GetEntry, GetEntries};
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
@@ -33,11 +33,11 @@ pub fn App(cx: Scope) -> impl IntoView {
 #[component]
 fn HomePage(cx: Scope) -> impl IntoView {
     let get_entry = create_server_action::<GetEntry>(cx);
-    let put_entry = create_server_action::<PutEntry>(cx);
+    let create_entry = create_server_action::<CreateEntry>(cx);
     let get_entries = create_server_action::<GetEntries>(cx);
 
     view! { cx,
-        <ActionForm action=put_entry>
+        <ActionForm action=create_entry>
             <h1>"Put Entry"</h1>
             <label>
                 "UserID"
