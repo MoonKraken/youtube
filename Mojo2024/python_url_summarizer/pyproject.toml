@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "python-url-summarizer"
+version = "0.1.0"
+description = ""
+authors = ["Ken <ken@cttm.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.7"
+transformers = "^4.45.2"
+requests = "^2.32.3"
+accelerate = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

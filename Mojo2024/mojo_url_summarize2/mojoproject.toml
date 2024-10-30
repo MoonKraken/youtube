@@ -1,0 +1,14 @@
+[project]
+authors = ["Ken 🏈 <me163@mac.com>"]
+channels = ["conda-forge", "https://conda.modular.com/max","https://repo.prefix.dev/mojo-community"]
+description = "Add a short description here"
+name = "mojo_url_summarize2"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+max = ">=24.5.0,<25"
+lightbug_http = ">=0.1.4,<0.2"
+requests = ">=2.32.3,<3"
