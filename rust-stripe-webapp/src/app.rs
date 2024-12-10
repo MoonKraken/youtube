@@ -1,10 +1,7 @@
 use std::{str::FromStr, sync::LazyLock};
 
 use eyre::Result;
-use leptos::{
-    either::{Either, EitherOf3},
-    prelude::*,
-};
+use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
@@ -14,7 +11,7 @@ use leptos_router::{
 #[cfg(feature = "ssr")]
 use stripe::{
     CheckoutSession, CheckoutSessionMode, CreateCheckoutSession, CreateCheckoutSessionLineItems,
-    Customer, CustomerId, ListSubscriptions, Subscription,
+    CustomerId, ListSubscriptions, Subscription, SubscriptionId,
 };
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -62,36 +59,40 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    // Creates a reactive value to update the button
-    // let count = RwSignal::new(0);
-    // let on_click = move |_| *count.write() += 1;
-
-    let subscription_status_resource = Resource::new(|| {}, |()| is_subscribed());
-
     let subscribe = Action::new(|_: &()| checkout());
     let unsubscribe = Action::new(|_: &()| cancel_subscription());
 
     let product = Resource::new(|| {}, |()| get_product());
 
-    view! {
-        <h1>"This is a paid product!"</h1>
-        <Suspense>
-            {move || {
-                    match subscription_status_resource.get() {
-                        Some(Ok(false)) => EitherOf3::A(
-                            view! { <button on:click=move |_| {subscribe.dispatch(());}>"Subscribe"</button> }
-                        ),
-                        Some(Ok(true)) => EitherOf3::B(
-                            view! { <button on:click=move |_| {unsubscribe.dispatch(());}>"Unsubscribe"</button> }
-                        ),
-                        _ => EitherOf3::C(view! { <h2>"Issue getting subscription status"</h2>}),
-                    };
-                }
+    let button = move || {
+        match product.get() {
+            Some(Ok((false, _))) => {
+                view! { <button on:click=move |_| {subscribe.dispatch(());}>"Subscribe"</button> }
+                    .into_any()
             }
+            Some(Ok((true, _))) => {
+                view! { <button on:click=move |_| {unsubscribe.dispatch(());}>"Unsubscribe"</button> }
+                    .into_any()
+            }
+            _ => view! { <h2>"Issue getting subscription status"</h2>}.into_any(),
+        }
+    };
+
+    let product_display = move || {
+        match product.get() {
+            Some(Ok((_, product))) => product,
+            _ => "Issue retrieving product".to_string(),
+        }
+    };
+
+    view! {
+        <h1>"Moonmine"</h1>
+        <Suspense>
+            {button}
         </Suspense>
 
         <Suspense>
-            <h1>{move || product.get()}</h1>
+            <h1>{product_display}</h1>
         </Suspense>
     }
 }
@@ -110,15 +111,6 @@ const ONLY_PRODUCT_ID: &'static str = "prod_RN0bO73isshroF";
 const ONLY_PRICE_ID: &'static str = "price_1QUGZyJVYHxEbIII76keKhMi";
 
 #[server]
-async fn is_subscribed() -> Result<bool, ServerFnError> {
-    let mut params = ListSubscriptions::new();
-    params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
-    let subscriptions = Subscription::list(&STRIPE_CLIENT, &params).await?.data;
-    // TODO check for product_id?
-    Ok(!subscriptions.is_empty())
-}
-
-#[server]
 async fn checkout() -> Result<(), ServerFnError> {
     // first get the price id of the product
     let checkout_session = {
@@ -135,11 +127,10 @@ async fn checkout() -> Result<(), ServerFnError> {
         params.expand = &["line_items", "line_items.data.price.product"];
 
         CheckoutSession::create(&STRIPE_CLIENT, params)
-            .await
-            .unwrap()
+            .await?
     };
 
-    let url = match checkout_session.url {
+    let _ = match checkout_session.url {
         Some(url) => leptos_axum::redirect(&url),
         _ => {
             return Err(ServerFnError::ServerError(
@@ -152,16 +143,44 @@ async fn checkout() -> Result<(), ServerFnError> {
 
 #[server]
 async fn cancel_subscription() -> Result<(), ServerFnError> {
+    // get the subscription id for the user
+    let mut params = ListSubscriptions::new();
+    params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
+
+    let subscription_list = Subscription::list(&STRIPE_CLIENT, &params).await?;
+    let subscription_id = match subscription_list.data.get(0) {
+        Some(subscription) => &subscription.id,
+        None => {
+            return Err(ServerFnError::ServerError(
+                "Couldn't find subscription to cancel".to_string(),
+            ))
+        }
+    };
+
+    let _ = Subscription::cancel(
+        &STRIPE_CLIENT,
+        &SubscriptionId::from_str(subscription_id)?,
+        stripe::CancelSubscription {
+            invoice_now: Some(false),
+            prorate: Some(false),
+            cancellation_details: None,
+        },
+    )
+    .await?;
+
     Ok(())
 }
 
 #[server]
-async fn get_product() -> Result<String, ServerFnError> {
-    match is_subscribed().await {
-        Ok(true) => Ok("💎".to_string()),  // paid version
-        Ok(false) => Ok("🪨".to_string()), // free version
-        Err(_) => Err(ServerFnError::ServerError(
-            "Issue getting product".to_string(),
-        )),
+async fn get_product() -> Result<(bool, String), ServerFnError> {
+    let mut params = ListSubscriptions::new();
+    params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
+    let subscriptions = Subscription::list(&STRIPE_CLIENT, &params).await?.data;
+    if subscriptions.is_empty() {
+        // not subscribed
+        Ok((false, "🪨".to_string())) // free version
+    } else {
+        // subscribed
+        Ok((true, "💎".to_string())) // paid version
     }
 }
