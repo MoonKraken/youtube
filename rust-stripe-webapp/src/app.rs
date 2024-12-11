@@ -9,8 +9,8 @@ use leptos_router::{
 
 #[cfg(feature = "ssr")]
 use stripe::{
-    CheckoutSession, CheckoutSessionMode, CreateCheckoutSession, CreateCheckoutSessionLineItems,
-    CustomerId, ListSubscriptions, Subscription, SubscriptionId,
+    CancelSubscription, CheckoutSession, CheckoutSessionMode, CreateCheckoutSession,
+    CreateCheckoutSessionLineItems, CustomerId, ListSubscriptions, Subscription, SubscriptionId,
 };
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -58,10 +58,10 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    let subscribe = Action::new(|_: &()| checkout());
-    let unsubscribe = Action::new(|_: &()| cancel_subscription());
+    let subscribe = Action::new(|_| checkout());
+    let unsubscribe = Action::new(|_| unsubscribe());
 
-    let product = Resource::new(|| {}, |()| get_product());
+    let product = Resource::new(|| {}, |_| get_product());
 
     let button = move || match product.get() {
         Some(Ok((false, _))) => {
@@ -82,6 +82,7 @@ fn HomePage() -> impl IntoView {
 
     view! {
         <h1>"Moonmine"</h1>
+        // <button on:click=move |_| {subscribe.dispatch(());}>"Subscribe"</button>
         <Suspense>
             {button}
         </Suspense>
@@ -107,16 +108,18 @@ const ONLY_PRICE_ID: &'static str = "price_1QUGZyJVYHxEbIII76keKhMi";
 
 #[server]
 async fn checkout() -> Result<(), ServerFnError> {
-    let mut params = CreateCheckoutSession::new();
-    params.cancel_url = Some("http://localhost:3000");
-    params.success_url = Some("http://localhost:3000");
-    params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
-    params.mode = Some(CheckoutSessionMode::Subscription);
-    params.line_items = Some(vec![CreateCheckoutSessionLineItems {
-        quantity: Some(1),
-        price: Some(ONLY_PRICE_ID.to_string()),
+    let params = CreateCheckoutSession {
+        cancel_url: Some("http://localhost:3000"),
+        success_url: Some("http://localhost:3000"),
+        customer: Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?),
+        mode: Some(CheckoutSessionMode::Subscription),
+        line_items: Some(vec![CreateCheckoutSessionLineItems {
+            quantity: Some(1),
+            price: Some(ONLY_PRICE_ID.to_string()),
+            ..Default::default()
+        }]),
         ..Default::default()
-    }]);
+    };
 
     let checkout_session = CheckoutSession::create(&STRIPE_CLIENT, params).await?;
 
@@ -131,10 +134,12 @@ async fn checkout() -> Result<(), ServerFnError> {
 }
 
 #[server]
-async fn cancel_subscription() -> Result<(), ServerFnError> {
+async fn unsubscribe() -> Result<(), ServerFnError> {
     // get the subscription id for the user
-    let mut params = ListSubscriptions::new();
-    params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
+    let params = ListSubscriptions {
+        customer: Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?),
+        ..Default::default()
+    };
 
     let subscription_list = Subscription::list(&STRIPE_CLIENT, &params).await?;
     let subscription_id = match subscription_list.data.get(0) {
@@ -146,14 +151,16 @@ async fn cancel_subscription() -> Result<(), ServerFnError> {
         }
     };
 
+    let params = CancelSubscription {
+        invoice_now: Some(false),
+        prorate: Some(false),
+        cancellation_details: None,
+    };
+
     let _ = Subscription::cancel(
         &STRIPE_CLIENT,
         &SubscriptionId::from_str(subscription_id)?,
-        stripe::CancelSubscription {
-            invoice_now: Some(false),
-            prorate: Some(false),
-            cancellation_details: None,
-        },
+        params,
     )
     .await?;
 
@@ -162,8 +169,11 @@ async fn cancel_subscription() -> Result<(), ServerFnError> {
 
 #[server]
 async fn get_product() -> Result<(bool, String), ServerFnError> {
-    let mut params = ListSubscriptions::new();
-    params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
+    let params = ListSubscriptions {
+        customer: Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?),
+        ..Default::default()
+    };
+
     let subscriptions = Subscription::list(&STRIPE_CLIENT, &params).await?.data;
     if subscriptions.is_empty() {
         // not subscribed
