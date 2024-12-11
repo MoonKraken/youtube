@@ -18,9 +18,7 @@ tower = { version = "0.4", optional = true }
 tower-http = { version = "0.5", features = ["fs"], optional = true }
 wasm-bindgen = "=0.2.96"
 thiserror = "1"
-tracing = { version = "0.1", optional = true }
 http = "1"
-eyre = "0.6.12"
 async-stripe = { version = "0.39.1", features = ["runtime-tokio-hyper"], optional = true }
 
 [features]
@@ -34,7 +32,7 @@ ssr = [
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
-    "dep:tracing",
+    # "dep:tracing",
     "dep:async-stripe"
 ]
 
@@ -50,7 +48,6 @@ panic = "abort"
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
 output-name = "rust-stripe-webapp"
 
-# The site root folder is where cargo-leptos generate all output. WARNING: all content of this folder will be erased on a rebuild. Use it in your server setup.
 site-root = "target/site"
 
 # The site-root relative folder where all compiled output (JS, WASM and CSS) is written

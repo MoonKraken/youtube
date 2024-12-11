@@ -1,6 +1,5 @@
 use std::{str::FromStr, sync::LazyLock};
 
-use eyre::Result;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -43,7 +42,7 @@ pub fn App() -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/rust-stripe-webapp.css"/>
 
         // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <Title text="Moonmine"/>
 
         // content for this welcome page
         <Router>
@@ -64,25 +63,21 @@ fn HomePage() -> impl IntoView {
 
     let product = Resource::new(|| {}, |()| get_product());
 
-    let button = move || {
-        match product.get() {
-            Some(Ok((false, _))) => {
-                view! { <button on:click=move |_| {subscribe.dispatch(());}>"Subscribe"</button> }
-                    .into_any()
-            }
-            Some(Ok((true, _))) => {
-                view! { <button on:click=move |_| {unsubscribe.dispatch(());}>"Unsubscribe"</button> }
-                    .into_any()
-            }
-            _ => view! { <h2>"Issue getting subscription status"</h2>}.into_any(),
+    let button = move || match product.get() {
+        Some(Ok((false, _))) => {
+            view! { <button on:click=move |_| {subscribe.dispatch(());}>"Subscribe"</button> }
+                .into_any()
         }
+        Some(Ok((true, _))) => {
+            view! { <button on:click=move |_| {unsubscribe.dispatch(());}>"Unsubscribe"</button> }
+                .into_any()
+        }
+        _ => view! { <h2>"Issue getting subscription status"</h2>}.into_any(),
     };
 
-    let product_display = move || {
-        match product.get() {
-            Some(Ok((_, product))) => product,
-            _ => "Issue retrieving product".to_string(),
-        }
+    let product_display = move || match product.get() {
+        Some(Ok((_, product))) => product,
+        _ => "Issue retrieving product".to_string(),
     };
 
     view! {
@@ -112,33 +107,27 @@ const ONLY_PRICE_ID: &'static str = "price_1QUGZyJVYHxEbIII76keKhMi";
 
 #[server]
 async fn checkout() -> Result<(), ServerFnError> {
-    // first get the price id of the product
-    let checkout_session = {
-        let mut params = CreateCheckoutSession::new();
-        params.cancel_url = Some("http://localhost:3000");
-        params.success_url = Some("http://localhost:3000");
-        params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
-        params.mode = Some(CheckoutSessionMode::Subscription);
-        params.line_items = Some(vec![CreateCheckoutSessionLineItems {
-            quantity: Some(1),
-            price: Some(ONLY_PRICE_ID.to_string()),
-            ..Default::default()
-        }]);
-        params.expand = &["line_items", "line_items.data.price.product"];
+    let mut params = CreateCheckoutSession::new();
+    params.cancel_url = Some("http://localhost:3000");
+    params.success_url = Some("http://localhost:3000");
+    params.customer = Some(CustomerId::from_str(ONLY_CUSTOMER_ID)?);
+    params.mode = Some(CheckoutSessionMode::Subscription);
+    params.line_items = Some(vec![CreateCheckoutSessionLineItems {
+        quantity: Some(1),
+        price: Some(ONLY_PRICE_ID.to_string()),
+        ..Default::default()
+    }]);
 
-        CheckoutSession::create(&STRIPE_CLIENT, params)
-            .await?
-    };
+    let checkout_session = CheckoutSession::create(&STRIPE_CLIENT, params).await?;
 
-    let _ = match checkout_session.url {
-        Some(url) => leptos_axum::redirect(&url),
-        _ => {
-            return Err(ServerFnError::ServerError(
-                "couldnt get session url".to_string(),
-            ))
-        }
-    };
-    Ok(())
+    if let Some(url) = checkout_session.url {
+        leptos_axum::redirect(&url);
+        Ok(())
+    } else {
+        Err(ServerFnError::ServerError(
+            "couldnt get session url".to_string(),
+        ))
+    }
 }
 
 #[server]
