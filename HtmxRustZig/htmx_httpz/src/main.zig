@@ -12,14 +12,9 @@ var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 const allocator = gpa.allocator();
 
 pub fn main() !void {
-    const john: []u8 = try allocator.alloc(u8, "John".len);
-    @memcpy(john, "John");
-
-    const smith: []u8 = try allocator.alloc(u8, "Smith".len);
-    @memcpy(smith, "Smith");
-
-    const email: []u8 = try allocator.alloc(u8, "jon@companyco.com".len);
-    @memcpy(email, "jon@companyco.com");
+    const john: []u8 = try allocator.dupe(u8, "John");
+    const smith: []u8 = try allocator.dupe(u8, "Smith");
+    const email: []u8 = try allocator.dupe(u8, "jon@companyco.com");
 
     stored_person = Person{ .first_name = john, .last_name = smith, .email = email };
 
@@ -44,8 +39,8 @@ pub fn main() !void {
     try server.listen();
 }
 
-fn view_only_person(person: *Person) ![]u8 {
-    return try std.fmt.allocPrint(allocator,
+fn view_only_person(a: std.mem.Allocator, person: *Person) ![]u8 {
+    return try std.fmt.allocPrint(a,
         \\       <div hx-target="this" hx-swap="outerHTML">
         \\           <div><label>First Name</label>: {s}</div>
         \\           <div><label>Last Name</label>: {s}</div>
@@ -60,7 +55,7 @@ fn view_only_person(person: *Person) ![]u8 {
 fn index(_: *httpz.Request, res: *httpz.Response) !void {
     stored_person_lock.lockShared();
     defer stored_person_lock.unlockShared();
-    res.body = try std.fmt.allocPrint(allocator,
+    res.body = try std.fmt.allocPrint(res.arena,
         \\           <!DOCTYPE html>
         \\           <html>
         \\           <head>
@@ -72,13 +67,13 @@ fn index(_: *httpz.Request, res: *httpz.Response) !void {
         \\           {s}
         \\           </body>
         \\           </html>
-    , .{try view_only_person(&stored_person)});
+    , .{try view_only_person(res.arena, &stored_person)});
 }
 
 fn contact_edit(_: *httpz.Request, res: *httpz.Response) !void {
     stored_person_lock.lockShared();
     defer stored_person_lock.unlockShared();
-    res.body = try std.fmt.allocPrint(allocator,
+    res.body = try std.fmt.allocPrint(res.arena,
         \\<form hx-put="/contact/1" hx-target="this" hx-swap="outerHTML">
         \\<div>
         \\<label>First Name</label>
@@ -101,7 +96,7 @@ fn contact_edit(_: *httpz.Request, res: *httpz.Response) !void {
 fn cancel_edit(_: *httpz.Request, res: *httpz.Response) !void {
     stored_person_lock.lockShared();
     defer stored_person_lock.unlockShared();
-    res.body = try view_only_person(&stored_person);
+    res.body = try view_only_person(res.arena, &stored_person);
 }
 
 fn contact_put(req: *httpz.Request, res: *httpz.Response) !void {
@@ -124,5 +119,5 @@ fn contact_put(req: *httpz.Request, res: *httpz.Response) !void {
         }
     }
 
-    res.body = try view_only_person(&stored_person);
+    res.body = try view_only_person(res.arena, &stored_person);
 }
