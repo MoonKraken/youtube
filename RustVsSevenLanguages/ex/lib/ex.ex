@@ -1,19 +1,13 @@
 defmodule SumModule do
-    def io_loop() do
-      IO.read(:stdio, :line)
-      |> String.split(" ")
-      |> SumModule.sum_fn
-      |> IO.puts
-      io_loop()
-    end
+  def io_loop() do
+    IO.read(:stdio, :line)
+    |> String.split()
+    |> sum_fn(0)
+    |> IO.puts()
 
-    def sum_fn(strs) do
-        case strs do
-          [curr | rest] ->
-            sum_fn(rest) +
-            (String.trim(curr)
-            |> String.to_integer)
-          [] -> 0
-        end
-    end
+    io_loop()
+  end
+
+  defp sum_fn([curr | rest], acc), do: sum_fn(rest, String.to_integer(curr) + acc)
+  defp sum_fn([], acc), do: acc
 end
