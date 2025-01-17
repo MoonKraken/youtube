@@ -1,26 +1,25 @@
 use axum::{
     Form, Router,
-    extract::State,
     response::{Html, IntoResponse},
     routing::{get, put},
 };
 use serde::Deserialize;
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::LazyLock};
 use tokio::sync::RwLock;
 use tracing::debug;
 
 use tower_http::trace::TraceLayer;
 
-#[tokio::main]
-async fn main() {
-    let person = PersonInfo {
+static PERSON: LazyLock<RwLock<PersonInfo>> = LazyLock::new(|| {
+    RwLock::new(PersonInfo {
         first_name: "John".to_string(),
         last_name: "Smith".to_string(),
         email: "john@companyco.com".to_string(),
-    }; // Run server
+    })
+});
 
-    let state = Arc::new(RwLock::new(person));
-
+#[tokio::main]
+async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     debug!("listening on {}", listener.local_addr().unwrap());
@@ -31,7 +30,6 @@ async fn main() {
             .route("/contact/1", put(contact_put))
             .route("/contact/1", get(cancel_edit))
             .route("/contact/1/edit", get(contact_edit))
-            .with_state(state)
             .layer(TraceLayer::new_for_http()),
     )
     .await
@@ -61,8 +59,8 @@ fn view_only_person(person: &PersonInfo) -> String {
     )
 }
 
-async fn index(State(state): State<Arc<RwLock<PersonInfo>>>) -> impl IntoResponse {
-    let person = state.read().await;
+async fn index() -> impl IntoResponse {
+    let person = PERSON.read().await;
     Html(format!(
         r#"
             <!DOCTYPE html>
@@ -81,8 +79,8 @@ async fn index(State(state): State<Arc<RwLock<PersonInfo>>>) -> impl IntoRespons
     ))
 }
 
-async fn contact_edit(State(state): State<Arc<RwLock<PersonInfo>>>) -> impl IntoResponse {
-    let person = state.read().await;
+async fn contact_edit() -> impl IntoResponse {
+    let person = PERSON.read().await;
     Html(format!(
         r#"<form hx-put="/contact/1" hx-target="this" hx-swap="outerHTML">
           <div>
@@ -106,18 +104,15 @@ async fn contact_edit(State(state): State<Arc<RwLock<PersonInfo>>>) -> impl Into
 
 // this should save the form submission
 // and turn the editable form back to view-only
-async fn contact_put(
-    State(state): State<Arc<RwLock<PersonInfo>>>,
-    Form(new_person): Form<PersonInfo>,
-) -> impl IntoResponse {
+async fn contact_put(Form(new_person): Form<PersonInfo>) -> impl IntoResponse {
     {
-        let mut person = state.write().await;
+        let mut person = PERSON.write().await;
         *person = new_person.clone();
     }
     Html(view_only_person(&new_person))
 }
 
-async fn cancel_edit(State(state): State<Arc<RwLock<PersonInfo>>>) -> impl IntoResponse {
-    let person = state.read().await;
+async fn cancel_edit() -> impl IntoResponse {
+    let person = PERSON.read().await;
     Html(view_only_person(&person))
 }
