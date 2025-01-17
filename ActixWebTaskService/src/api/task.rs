@@ -84,6 +84,8 @@ pub async fn submit_task(
         request.source_file.clone(),
     );
 
+    dbg!(&task);
+
     let task_identifier = task.get_global_id();
     match ddb_repo.put_task(task).await {
         Ok(()) => Ok(Json(TaskIdentifier { task_global_id: task_identifier })),

@@ -17,18 +17,30 @@ async fn stars(user: Path<String>) -> Result<String> {
         .per_page(50)
         .send()
         .await
-        .map_err(|_| ErrorNotFound("issue looking up user stars"))?;
+        .map_err(|_| {
+                ErrorNotFound(
+                    "issue looking up user stars"
+                )
+            }
+        )?;
 
     let mut accum = 0;
     loop {
         for repo in &page {
-            accum = accum + repo.stargazers_count.unwrap_or(0);
+            accum = accum + repo
+                .stargazers_count
+                .unwrap_or(0);
         }
 
         page = match octocrab
             .get_page::<Repository>(&page.next)
             .await
-            .map_err(|_| ErrorInternalServerError("issue looking up user stars"))?
+            .map_err(|_| {
+                    ErrorInternalServerError(
+                        "issue looking up user stars"
+                    )
+                }
+            )?
         {
             Some(next_page) => next_page,
             None => break,

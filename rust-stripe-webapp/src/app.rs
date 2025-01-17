@@ -1,3 +1,4 @@
+#[cfg(feature = "ssr")]
 use std::{str::FromStr, sync::LazyLock};
 
 use leptos::prelude::*;
@@ -72,7 +73,7 @@ fn HomePage() -> impl IntoView {
             view! { <button on:click=move |_| {unsubscribe.dispatch(());}>"Unsubscribe"</button> }
                 .into_any()
         }
-        _ => view! { <h2>"Issue getting subscription status"</h2>}.into_any(),
+        _ => view! {}.into_any(),
     };
 
     let product_display = move || match product.get() {
@@ -101,8 +102,6 @@ static STRIPE_CLIENT: LazyLock<stripe::Client> = LazyLock::new(|| {
 
 #[cfg(feature = "ssr")]
 const ONLY_CUSTOMER_ID: &'static str = "cus_RN0Ye4SHf9K8k1";
-#[cfg(feature = "ssr")]
-const ONLY_PRODUCT_ID: &'static str = "prod_RN0bO73isshroF";
 #[cfg(feature = "ssr")]
 const ONLY_PRICE_ID: &'static str = "price_1QUGZyJVYHxEbIII76keKhMi";
 
