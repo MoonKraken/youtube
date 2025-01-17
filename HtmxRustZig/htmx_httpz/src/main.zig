@@ -59,7 +59,7 @@ fn index(_: *httpz.Request, res: *httpz.Response) !void {
         \\           <!DOCTYPE html>
         \\           <html>
         \\           <head>
-        \\               <title>+ HTMX</title>
+        \\               <title>Zig + HTMX</title>
         \\               <script src="https://unpkg.com/htmx.org"></script>
         \\               <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
         \\           </head>
