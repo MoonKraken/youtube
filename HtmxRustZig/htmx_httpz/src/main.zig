@@ -104,8 +104,6 @@ fn contact_put(req: *httpz.Request, res: *httpz.Response) !void {
     defer stored_person_lock.unlock();
     var it = (try req.formData()).iterator();
 
-    res.content_type = .TEXT;
-
     while (it.next()) |kv| {
         if (std.mem.eql(u8, kv.key, "first_name")) {
             stored_person.first_name = try allocator.realloc(stored_person.first_name, kv.value.len);
