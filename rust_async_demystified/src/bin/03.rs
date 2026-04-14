@@ -12,6 +12,6 @@ pub fn main() {
 
 pub async fn get_page(url: &str) {
     println!("Retrieving {}", url);
-    let _ = ureq::get(url).call().unwrap();
+    let _ = reqwest::get(url).await.unwrap();
     println!("Completed {}", url);
 }

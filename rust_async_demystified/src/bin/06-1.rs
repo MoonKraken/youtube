@@ -1,12 +1,10 @@
-use futures::future::join_all;
+use tokio::join;
 
 #[tokio::main(worker_threads = 2)]
 pub async fn main() {
-    let handles = (0..=500).map(|_|  {
-        tokio::spawn(get_page("https://news.ycombinator.com"))
-    });
-
-    join_all(handles).await;
+    let a = tokio::spawn(get_page("https://news.ycombinator.com"));
+    let b = tokio::spawn(get_page("https://www.lobste.rs"));
+    let _ = join!(a, b);
 }
 
 pub async fn get_page(url: &str) {
