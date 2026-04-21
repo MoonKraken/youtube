@@ -9,7 +9,7 @@ fn invert_tree(
     Box::pin(async move {
         // Use `mut n` so we can modify the fields
         if let Some(mut n) = node {
-            let (left_child, right_child) = if depth > 4 {
+            let (left_child, right_child) = if depth < 4 {
                 let left_task = tokio::spawn(invert_tree(n.left, depth + 1));
                 let right_task = tokio::spawn(invert_tree(n.right, depth + 1));
                 
