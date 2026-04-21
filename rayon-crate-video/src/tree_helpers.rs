@@ -6,7 +6,7 @@ pub struct TreeNode {
 }
 
 impl TreeNode {
-    fn new(data: i64) -> Self {
+    pub fn new(data: i64) -> Self {
         TreeNode {
             data,
             left: None,
@@ -14,7 +14,7 @@ impl TreeNode {
         }
     }
 
-    fn with_children(data: i64, left: Box<TreeNode>, right: Box<TreeNode>) -> Self {
+    pub fn with_children(data: i64, left: Box<TreeNode>, right: Box<TreeNode>) -> Self {
         TreeNode {
             data,
             left: Some(left),
