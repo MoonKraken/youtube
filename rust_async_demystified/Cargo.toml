@@ -6,5 +6,5 @@ edition = "2024"
 [dependencies]
 futures = "0.3.32"
 reqwest = { version = "0.12", features = ["blocking"] }
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.52", features = ["full"] }
 ureq = "2.9"
