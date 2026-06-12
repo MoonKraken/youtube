@@ -7,9 +7,7 @@ pub fn main() {
 
     for _ in 0..3 {
         std::thread::spawn(move || {
-            for _ in 0..3 {
-                dbg!(shared_data);
-            }
+            dbg!(shared_data);
         });
 
         std::thread::spawn(move || {

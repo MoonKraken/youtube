@@ -7,17 +7,15 @@ struct SharedData;
 async fn main() {
     let shared_data = SharedData;
 
-    for _ in 0..3 {
-        let ((), _) = TokioScope::scope_and_block(|s| {
+    let ((), _) = TokioScope::scope_and_block(|s| {
+        for _ in 0..3 {
             s.spawn(async {
-                for _ in 0..3 {
-                    dbg!(&shared_data);
-                }
+                dbg!(&shared_data);
             });
 
             s.spawn(async {
                 dbg!(&shared_data);
             });
-        });
-    }
+        }
+    });
 }

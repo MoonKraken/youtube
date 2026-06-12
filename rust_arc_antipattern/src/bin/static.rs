@@ -10,9 +10,7 @@ static SHARED_DATA: LazyLock<SharedData> = LazyLock::new(|| {
 pub fn main() {
     for _ in 0..3 {
         std::thread::spawn(|| {
-            for _ in 0..3 {
-                dbg!(&*SHARED_DATA);
-            }
+            dbg!(&*SHARED_DATA);
         });
 
         std::thread::spawn(|| {

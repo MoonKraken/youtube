@@ -7,9 +7,7 @@ pub fn main() {
     std::thread::scope(|s| {
         for _ in 0..3 {
             s.spawn(|| {
-                for _ in 0..3 {
-                    dbg!(&shared_data);
-                }
+                dbg!(&shared_data);
             });
 
             s.spawn(|| {

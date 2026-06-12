@@ -10,9 +10,7 @@ async fn main() {
     for _ in 0..3 {
         let ((), _) = TokioScope::scope_and_block(|s| {
             s.spawn(async {
-                for _ in 0..3 {
-                    dbg!(&shared_data);
-                }
+                dbg!(&shared_data);
             });
 
             s.spawn(async {

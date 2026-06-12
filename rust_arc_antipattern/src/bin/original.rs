@@ -9,9 +9,7 @@ pub fn main() {
     for _ in 0..3 {
         let clone_one = Arc::clone(&shared_data);
         std::thread::spawn(move || {
-            for _ in 0..3 {
-                dbg!(&clone_one);
-            }
+            dbg!(&clone_one);
         });
 
         let clone_two = Arc::clone(&shared_data);
