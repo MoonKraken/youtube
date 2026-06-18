@@ -6,3 +6,23 @@ edition = "2024"
 [dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 async-scoped = { version = "0.9", features = ["use-tokio"] }
+
+[[bin]]
+name = "tokio_original"
+path = "src/bin/tokio_variants/original.rs"
+
+[[bin]]
+name = "tokio_leak"
+path = "src/bin/tokio_variants/leak.rs"
+
+[[bin]]
+name = "tokio_no_scope"
+path = "src/bin/tokio_variants/no_scope.rs"
+
+[[bin]]
+name = "tokio_static"
+path = "src/bin/tokio_variants/static.rs"
+
+[[bin]]
+name = "tokio_async_scoped"
+path = "src/bin/tokio_variants/async_scoped.rs"
